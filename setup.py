@@ -6,7 +6,7 @@ with open("README.md", "r") as readme_file:
     long_description = readme_file.read()
 
 setuptools.setup(
-    name="pep249",
+    name="pep249abc",
     version=__version__,
     author="Travis Hesketh",
     author_email="travis@hesketh.scot",

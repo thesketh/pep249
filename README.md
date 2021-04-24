@@ -26,7 +26,7 @@ behaviour. Implementations will be fully typed, and some functionality is provid
 ## Installation
 
 ```bash
-python3 -mpip install pep249
+python3 -mpip install pep249abc
 ```
 
 ## Usage
