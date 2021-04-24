@@ -1,5 +1,7 @@
 # An Abstract PEP-249 Implementation
 
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+
 This library contains an abstract implementation of [PEP-249](https://www.python.org/dev/peps/pep-0249)
 which should make it easier to implement new databases in Python. These abstract
 implementations are fully typed and the docstrings contain some (plagiarised) information
