@@ -10,6 +10,7 @@ setuptools.setup(
     version=__version__,
     author="Travis Hesketh",
     author_email="travis@hesketh.scot",
+    url="https://github.com/thesketh/pep249",
     description="Abstract implementation of the DB 2.0 API outlined in PEP-249.",
     long_description=long_description,
     long_description_content_type="text/markdown",
