@@ -64,7 +64,7 @@ class AsyncTransactionFreeContextMixin(metaclass=ABCMeta):
         traceback: Optional[TracebackType] = None,
     ) -> bool:
         """Close the object upon exiting the context manager."""
-        self.close()
+        await self.close()
         return not error
 
 
