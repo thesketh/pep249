@@ -5,12 +5,14 @@
 This library contains an abstract implementation of [PEP-249](https://www.python.org/dev/peps/pep-0249)
 which should make it easier to implement new databases in Python. These abstract
 implementations are fully typed and the docstrings contain some (plagiarised) information
-from the standard.
+from the standard. There is a basic async implementation which could probably be improved
+upon.
 
 To demonstrate usage of this library, I'm putting together a wrapper on top of the 
 excellent [DuckDB](https://duckdb.org/) library which adds full typing, context managers, 
 distinct cursors, and easier to manage error types. [This wrapper is available here](https://github.com/thesketh/pyduckdb),
-and is currently a bit rough around the edges.
+and is currently a bit rough around the edges. It contains a naive async implementation
+which essentially just wraps every call with [`asyncio.to_thread`](https://docs.python.org/3/library/asyncio-task.html#asyncio.to_thread).
 
 Tested in Python 3.7, but not extensively. This library has not been condoned by the PEP
 authors, who might hate it. 
@@ -61,6 +63,20 @@ class Connection(
 
 ```
 
+The async implementation is contained in a separate subpackage:
+
+```python
+from pep249 import aiopep249
+
+class AsyncConnection(
+   aiopep249.AsyncCursorExecuteMixin, 
+   aiopep249.ConcreteErrorMixin,
+   aiopep249.AsyncConnection,
+):
+    ...
+
+```
+
 ## What has been implemented?
 
 All of the core functionality, some 'common but slightly non-compliant' stuff (e.g. 
@@ -70,6 +86,10 @@ All of the core functionality, some 'common but slightly non-compliant' stuff (e
  - A mixin to [add a reference to the `Connection` to the `Cursor`](https://www.python.org/dev/peps/pep-0249/#id28).
  - A mixin to [add support for next](https://www.python.org/dev/peps/pep-0249/#next) 
    and [iteration](https://www.python.org/dev/peps/pep-0249/#iter).
+
+There is now a very basic async implementation, which was made by copy and pasting the synchronous
+implementation and sprinking the words `async` and `await` in some appropriate (and likely some 
+inappropriate) places.
 
 ## What has not been implemented?
 
@@ -96,5 +116,5 @@ these work or how they should tie in.
 
 ## What are the future plans?
 
-Hopefully, an async implementation of these abstract classes, taking some inspiration 
-from [aiosqlite](https://pypi.org/project/aiosqlite/).
+General improvements, some further testing, some documentation, and maybe a more inspired
+async implementation which more commonly mirrors [aiosqlite](https://pypi.org/project/aiosqlite/).
