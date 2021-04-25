@@ -3,8 +3,7 @@ Async transaction support (and non-support!) for PEP 249 compliant
 async database API implementations. These mixins effectively provide
 the 'context' component of an async database connection or cursor.
 
-These abstract mixin classes provide an async context manager and a
-finaliser which closes the database connection.
+These abstract mixin classes provide an async context manager.
 
 There are three implementations:
  - A transaction free context, which is intended for use in compliant
@@ -17,7 +16,6 @@ There are three implementations:
    transactions.
 
 """
-import asyncio
 from abc import ABCMeta, abstractmethod
 from types import TracebackType
 from typing import Optional, Type, TypeVar
@@ -68,19 +66,6 @@ class AsyncTransactionFreeContextMixin(metaclass=ABCMeta):
         """Close the object upon exiting the context manager."""
         self.close()
         return not error
-
-    def __del__(self) -> None:
-        """Close the object if it is garbage collected."""
-        try:
-            loop = asyncio.get_event_loop()
-        except RuntimeError:
-            loop = asyncio.new_event_loop()
-            asyncio.set_event_loop(loop)
-        else:
-            if loop.is_closed():
-                loop = asyncio.new_event_loop()
-                asyncio.set_event_loop(loop)
-        loop.run_until_complete(self.close())
 
 
 class AsyncTransactionContextMixin(AsyncTransactionFreeContextMixin, metaclass=ABCMeta):
