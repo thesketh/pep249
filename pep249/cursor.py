@@ -13,7 +13,7 @@ this is implemented using a set of mixins:
 from abc import ABCMeta, abstractmethod
 from typing import Optional, Sequence, Type, TypeVar, Union
 from .transactions import TransactionFreeContextMixin, TransactionContextMixin
-from ..types import (
+from .types import (
     QueryParameters,
     ResultRow,
     ResultSet,

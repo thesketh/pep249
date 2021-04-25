@@ -30,11 +30,10 @@ class IterableAsyncCursorMixin:
     """
 
     async def __anext__(self) -> Optional[ResultRow]:
-        return await self.fetchone()
+        item = await self.fetchone()
+        if item is None:
+            raise StopAsyncIteration
+        return item
 
-    async def __aiter__(self) -> Iterator[ResultRow]:
-        while True:
-            next_item = await self.__anext__()
-            if next_item is None:
-                return
-            yield next_item
+    def __aiter__(self) -> Iterator[ResultRow]:
+        return self

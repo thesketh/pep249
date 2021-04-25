@@ -23,7 +23,7 @@ from .types import (
     ProcName,
     ProcArgs,
 )
-from ..base.cursor import CursorSetSizeMixin
+from ..cursor import CursorSetSizeMixin
 
 
 AsyncCursorType = TypeVar(
