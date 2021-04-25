@@ -7,12 +7,18 @@ will enforce implementation of the relevant functions, and will implement
 some functionality (e.g. context managers) for free.
 
 """
-from .base import *
+from .connection import Connection, TransactionlessConnection
+from .cursor import Cursor, TransactionalCursor, CursorExecuteMixin, CursorFetchMixin
+from .transactions import (
+    TransactionFreeContextMixin,
+    TransactionContextMixin,
+    DummyTransactionContextMixin,
+)
 from .exceptions import *
 from .extensions import *
 from .types import *
 
-__version__ = "0.0.1b2"
+__version__ = "0.0.1b3"
 
 __all__ = [
     "Connection",

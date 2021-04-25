@@ -9,7 +9,7 @@ from typing import Iterator, Optional, Type, TYPE_CHECKING
 from .types import ResultRow
 
 if TYPE_CHECKING:
-    from .base.connection import BaseConnection
+    from .connection import BaseConnection
 
 
 class ConnectionErrorsMixin(metaclass=ABCMeta):
@@ -101,7 +101,10 @@ class IterableCursorMixin:
     """
 
     def __next__(self) -> Optional[ResultRow]:
-        return self.fetchone()
+        item = self.fetchone()
+        if item is None:
+            raise StopIteration
+        return item
 
     def __iter__(self) -> Iterator[ResultRow]:
-        return iter(lambda: next(self), None)
+        return self
