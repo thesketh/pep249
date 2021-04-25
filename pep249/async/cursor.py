@@ -30,7 +30,6 @@ AsyncCursorType = TypeVar(
     "AsyncCursorType",
     "AsyncCursor",
     "TransactionalAsyncCursor",
-    bound="BaseAsyncCursor",
 )
 
 

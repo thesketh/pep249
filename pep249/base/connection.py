@@ -8,7 +8,7 @@ from .transactions import TransactionContextMixin, DummyTransactionContextMixin
 from .cursor import CursorType
 
 ConnectionType = TypeVar(
-    "ConnectionType", "Connection", "TransactionlessConnection", bound="BaseConnection"
+    "ConnectionType", "Connection", "TransactionlessConnection"
 )
 
 

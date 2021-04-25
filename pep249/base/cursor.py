@@ -24,7 +24,7 @@ from ..types import (
 )
 
 
-CursorType = TypeVar("CursorType", "Cursor", "TransactionalCursor", bound="BaseCursor")
+CursorType = TypeVar("CursorType", "Cursor", "TransactionalCursor")
 
 
 class CursorExecuteMixin(metaclass=ABCMeta):

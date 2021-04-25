@@ -18,7 +18,6 @@ AsyncConnectionType = TypeVar(
     "AsyncConnectionType",
     "AsyncConnection",
     "TransactionlessAsyncConnection",
-    bound="BaseAsyncConnection",
 )
 
 
