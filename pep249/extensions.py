@@ -4,7 +4,6 @@ Optional extensions to the DB-API 2.0, as outlined in PEP 249.
 https://www.python.org/dev/peps/pep-0249/#optional-db-api-extensions
 
 """
-# pylint: disable=bad-continuation
 from abc import abstractmethod, ABCMeta
 from typing import Iterator, Optional, Type, TYPE_CHECKING
 from .types import ResultRow

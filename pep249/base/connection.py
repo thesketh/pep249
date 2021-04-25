@@ -2,20 +2,21 @@
 An abstract database connection implementation, conformant with PEP 249.
 
 """
-# pylint: disable=bad-continuation
 from abc import ABCMeta, abstractmethod
-from typing import TYPE_CHECKING
+from typing import TypeVar
 from .transactions import TransactionContextMixin, DummyTransactionContextMixin
+from .cursor import CursorType
 
-if TYPE_CHECKING:
-    from .cursor import BaseCursor
+ConnectionType = TypeVar(
+    "ConnectionType", "Connection", "TransactionlessConnection", bound="BaseConnection"
+)
 
 
 class BaseConnection:  # pylint: disable=too-few-public-methods
     """A Connection without an associated context."""
 
     @abstractmethod
-    def cursor(self) -> "BaseCursor":
+    def cursor(self: ConnectionType) -> CursorType:
         """Return a database cursor."""
         raise NotImplementedError
 

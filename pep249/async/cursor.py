@@ -5,15 +5,16 @@ Because it is common for database connections to implement the execute
 functionality of the cursor, returning a cursor containing the results,
 this is implemented using a set of mixins:
 
- - CursorExecuteMixin
- - CursorFechMixin
+ - AsyncCursorExecuteMixin
+ - AsyncCursorFechMixin
  - CursorSetSizeMixin
 
 """
 from abc import ABCMeta, abstractmethod
-from typing import Optional, Sequence, Type, TypeVar, Union
-from .transactions import TransactionFreeContextMixin, TransactionContextMixin
-from ..types import (
+from typing import Optional, Sequence, TypeVar
+
+from .transactions import AsyncTransactionFreeContextMixin, AsyncTransactionContextMixin
+from .types import (
     QueryParameters,
     ResultRow,
     ResultSet,
@@ -22,12 +23,18 @@ from ..types import (
     ProcName,
     ProcArgs,
 )
+from ..base.cursor import CursorSetSizeMixin
 
 
-CursorType = TypeVar("CursorType", "Cursor", "TransactionalCursor", bound="BaseCursor")
+AsyncCursorType = TypeVar(
+    "AsyncCursorType",
+    "AsyncCursor",
+    "TransactionalAsyncCursor",
+    bound="BaseAsyncCursor",
+)
 
 
-class CursorExecuteMixin(metaclass=ABCMeta):
+class AsyncCursorExecuteMixin(metaclass=ABCMeta):
     """
     The execute portions of a PEP 249 compliant Cursor protocol.
 
@@ -37,11 +44,11 @@ class CursorExecuteMixin(metaclass=ABCMeta):
     """
 
     @abstractmethod
-    def execute(
-        self: CursorType,
+    async def execute(
+        self: AsyncCursorType,
         operation: SQLQuery,
         parameters: Optional[QueryParameters] = None,
-    ) -> CursorType:
+    ) -> AsyncCursorType:
         """
         Execute an SQL query. Values may be bound by passing parameters
         as outlined in PEP 249.
@@ -50,11 +57,11 @@ class CursorExecuteMixin(metaclass=ABCMeta):
         raise NotImplementedError
 
     @abstractmethod
-    def executemany(
-        self: CursorType,
+    async def executemany(
+        self: AsyncCursorType,
         operation: SQLQuery,
         seq_of_parameters: Sequence[QueryParameters],
-    ) -> CursorType:
+    ) -> AsyncCursorType:
         """
         Execute an SQL query, parameterising the query with sequences
         or mappings passed as parameters.
@@ -63,8 +70,8 @@ class CursorExecuteMixin(metaclass=ABCMeta):
         raise NotImplementedError
 
     @abstractmethod
-    def callproc(
-        self: CursorType, procname: ProcName, parameters: Optional[ProcArgs] = None
+    async def callproc(
+        self: AsyncCursorType, procname: ProcName, parameters: Optional[ProcArgs] = None
     ) -> Optional[ProcArgs]:
         """
         Execute an SQL stored procedure, passing the sequence of parameters.
@@ -78,49 +85,12 @@ class CursorExecuteMixin(metaclass=ABCMeta):
         raise NotImplementedError
 
 
-class CursorSetSizeMixin(metaclass=ABCMeta):
-    """An implementation of size setting for cursor."""
-
-    @abstractmethod
-    def setinputsizes(
-        self: CursorType, sizes: Sequence[Optional[Union[int, Type]]]
-    ) -> None:
-        """
-        Can be used before a call to `execute` to predefine memory areas
-        for the operation's parameters.
-
-        `sizes` is a sequence containing an item - a type, or an integer
-        specifying the maximum length for a string - for each input
-        parameter. If the item is None, no memory will be reserved for
-        that column.
-
-        Implementations are free to have this method do nothing.
-        """
-        raise NotImplementedError
-
-    @abstractmethod
-    def setoutputsize(self: CursorType, size: int, column: Optional[int]) -> None:
-        """
-        Can be used before a call to `execute` to predefine buffer
-        sizes for fetches of 'large' columns (e.g. LONG, BLOB, etc.).
-
-        `size` is an int, referring to the size of the column.
-
-        `column` is an optional int, referring to the index in the
-        result sequence. If this is not provided, this will set
-        the default size for all 'large' columns in the cursor.
-
-        Implementations are free to have this method do nothing.
-        """
-        raise NotImplementedError
-
-
-class CursorFetchMixin(metaclass=ABCMeta):
+class AsyncCursorFetchMixin(metaclass=ABCMeta):
     """The fetch portions of a PEP 249 compliant Cursor protocol."""
 
     @property
     @abstractmethod
-    def description(self: CursorType) -> Optional[Sequence[ColumnDescription]]:
+    def description(self: AsyncCursorType) -> Optional[Sequence[ColumnDescription]]:
         """
         A read-only attribute returning a sequence containing a description
         (a seven-item sequence) for each column in the result set.
@@ -134,7 +104,7 @@ class CursorFetchMixin(metaclass=ABCMeta):
 
     @property
     @abstractmethod
-    def rowcount(self: CursorType) -> int:
+    def rowcount(self: AsyncCursorType) -> int:
         """
         A read-only attribute returning the number of rows that the last
         execute call returned (for e.g. SELECT calls) or affected (for e.g.
@@ -146,7 +116,7 @@ class CursorFetchMixin(metaclass=ABCMeta):
         raise NotImplementedError
 
     @property
-    def arraysize(self: CursorType) -> int:
+    def arraysize(self: AsyncCursorType) -> int:
         """
         An attribute specifying the number of rows to fetch at a time with
         `fetchmany`.
@@ -156,11 +126,11 @@ class CursorFetchMixin(metaclass=ABCMeta):
         return getattr(self, "_arraysize", 1)
 
     @arraysize.setter
-    def arraysize(self: CursorType, value: int):
+    def arraysize(self: AsyncCursorType, value: int):
         setattr(self, "_arraysize", value)
 
     @abstractmethod
-    def fetchone(self: CursorType) -> Optional[ResultRow]:
+    async def fetchone(self: AsyncCursorType) -> Optional[ResultRow]:
         """
         Fetch the next row from the query result set as a sequence of Python
         types (or return None when no more rows are available).
@@ -171,7 +141,7 @@ class CursorFetchMixin(metaclass=ABCMeta):
         """
         raise NotImplementedError
 
-    def fetchmany(self: CursorType, size: Optional[int] = None) -> ResultSet:
+    async def fetchmany(self: AsyncCursorType, size: Optional[int] = None) -> ResultSet:
         """
         Fetch the next `size` rows from the query result set as a list
         of sequences of Python types.
@@ -187,7 +157,7 @@ class CursorFetchMixin(metaclass=ABCMeta):
         raise NotImplementedError
 
     @abstractmethod
-    def fetchall(self: CursorType) -> ResultSet:
+    async def fetchall(self: AsyncCursorType) -> ResultSet:
         """
         Fetch the remaining rows from the query result set as a list of
         sequences of Python types.
@@ -200,7 +170,7 @@ class CursorFetchMixin(metaclass=ABCMeta):
         raise NotImplementedError
 
     @abstractmethod
-    def nextset(self: CursorType) -> Optional[bool]:
+    async def nextset(self: AsyncCursorType) -> Optional[bool]:
         """
         Skip the cursor to the next available result set, discarding
         rows from the current set. If there are no more sets, return
@@ -212,19 +182,22 @@ class CursorFetchMixin(metaclass=ABCMeta):
         raise NotImplementedError
 
 
-class BaseCursor(
-    CursorFetchMixin, CursorExecuteMixin, CursorSetSizeMixin, metaclass=ABCMeta
+class BaseAsyncCursor(
+    AsyncCursorFetchMixin,
+    AsyncCursorExecuteMixin,
+    CursorSetSizeMixin,
+    metaclass=ABCMeta,
 ):
     """A Cursor without an associated context."""
 
 
-class Cursor(TransactionFreeContextMixin, BaseCursor, metaclass=ABCMeta):
+class AsyncCursor(AsyncTransactionFreeContextMixin, BaseAsyncCursor, metaclass=ABCMeta):
     """A PEP 249 compliant Cursor protocol."""
 
 
-class TransactionalCursor(
-    TransactionContextMixin,
-    BaseCursor,
+class TransactionalAsyncCursor(
+    AsyncTransactionContextMixin,
+    BaseAsyncCursor,
     metaclass=ABCMeta,
 ):
     """
