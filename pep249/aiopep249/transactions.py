@@ -71,10 +71,15 @@ class AsyncTransactionFreeContextMixin(metaclass=ABCMeta):
 
     def __del__(self) -> None:
         """Close the object if it is garbage collected."""
-        loop = asyncio.get_event_loop()
-        if loop.is_closed():
+        try:
+            loop = asyncio.get_event_loop()
+        except RuntimeError:
             loop = asyncio.new_event_loop()
             asyncio.set_event_loop(loop)
+        else:
+            if loop.is_closed():
+                loop = asyncio.new_event_loop()
+                asyncio.set_event_loop(loop)
         loop.run_until_complete(self.close())
 
 
